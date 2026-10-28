@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Employee Lab V1.2｜動態辦公室</title>
+<style>
+:root{font-family:system-ui,"Microsoft JhengHei",sans-serif;color:#223447;background:#f3f1e9}*{box-sizing:border-box}body{margin:0}header{background:#203246;color:white;padding:20px max(20px,calc((100vw - 1100px)/2))}header h1{margin:5px 0}main{max-width:1100px;margin:auto;padding:20px}.notice{background:#fff0d3;border-left:4px solid #d89535;padding:12px;border-radius:8px;margin-bottom:14px}.layout{display:grid;grid-template-columns:2fr 1fr;gap:14px}.panel{background:white;border:1px solid #d9e0e4;border-radius:16px;padding:15px;margin-bottom:14px}h2{font-size:19px;margin:0 0 12px}button{border:0;border-radius:8px;background:#255c86;color:white;padding:9px 13px;cursor:pointer}button:focus-visible{outline:3px solid orange}.world{height:520px;position:relative;overflow:hidden;border-radius:14px;background:linear-gradient(#acd6ea 0 36%,#c8ddaf 36% 100%);transition:background .5s}.world.night{background:linear-gradient(#162c50 0 36%,#345244 36% 100%);color:white}.world:before{content:"";position:absolute;left:15%;right:15%;top:61%;height:14%;background:#e4d6b6;border-radius:55%;transform:rotate(-8deg)}.building{position:absolute;width:27%;height:31%;background:#e8c3ac;border:4px solid #76584a;border-radius:9px 9px 3px 3px;text-align:center;padding:20px 3px 4px;font-weight:700;box-shadow:8px 9px #0002}.building:after{content:"▣  ▣";display:block;font-size:30px;color:#607b93}.b1{left:4%;top:12%;background:#dfab96}.b2{right:4%;top:12%;background:#a7c6e3}.b3{left:4%;bottom:7%;background:#dfd5ac}.b4{right:4%;bottom:7%;background:#b8d9b1}.court{position:absolute;left:40%;top:43%;font-size:46px;text-align:center}.court small{display:block;font-size:12px}.person{position:absolute;left:0;top:0;z-index:4;transform:translate(-50%,-50%);transition:left 1.5s ease-in-out,top 1.5s ease-in-out;display:flex;flex-direction:column;align-items:center;min-width:78px;pointer-events:none}.person .avatar{font-size:32px;filter:drop-shadow(2px 3px 2px #0004)}.person .tag{font-size:11px;background:#fffdf2;color:#243546;border:1px solid #9fa9a5;border-radius:10px;padding:2px 5px;white-space:nowrap}.person.stuck .avatar{animation:shake 1.3s infinite}.person.working .avatar{animation:bob 1.2s infinite}.person.offline{opacity:.6}@keyframes bob{50%{transform:translateY(-5px)}}@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}.status{display:flex;justify-content:space-between;border-bottom:1px solid #e5e8eb;padding:10px 0;gap:8px}.status small{display:block;color:#637487}#log{max-height:250px;overflow:auto;font-size:13px}#log p{border-bottom:1px solid #eee;padding:5px 0;margin:0}select{width:100%;padding:9px;border:1px solid #ccd3d9;border-radius:8px}.meta{font-size:12px;color:#66717b}.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;margin-top:10px}@media(max-width:760px){.layout{grid-template-columns:1fr}.world{height:480px}.building{font-size:11px}.building:after{font-size:20px}.person .avatar{font-size:24px}}
+</style></head><body><header><small>AI EMPLOYEE LAB · V1.2 · READ ONLY PREVIEW</small><h1>台灣微縮動態辦公室</h1><div>六位員工・狀態連動・移動動畫・事件紀錄</div></header><main>
+<div class="notice"><strong>能力揭露：</strong>此頁唯讀取同來源瀏覽器中的 V1.1 任務資料，不會修改任務或審核結果。尚未連接 Claude、Codex 或 Grok 的真實執行紀錄；畫面上的「工作中」只代表 V1.1 人工記錄狀態。</div>
+<div class="layout"><div class="panel"><h2>🏘️ 微縮園區 <span id="clock" class="meta"></span></h2><div class="world" id="world"><div class="building b1">📚 研究樓</div><div class="building b2">🗂️ 總 PM 樓</div><div class="building b3">☕ 休息宿舍</div><div class="building b4">📝 創作樓</div><div class="court">🌳<small>榕樹中庭</small></div><div id="people"></div></div><div class="legend"><span>🟢 工作中</span><span>🟠 等待核准</span><span>🔴 失敗／卡住</span><span>⚪ 閒置／休息</span></div></div>
+<div><div class="panel"><h2>即時狀態 <span class="meta">每 3 秒檢查</span></h2><div id="source" class="meta"></div><div id="statuses"></div><p class="meta">資料不會傳送到外部伺服器。請在與 V1.1 相同的網址來源開啟，才能讀取同一份瀏覽器儲存資料。</p><button id="refresh">立即更新</button></div><div class="panel"><h2>狀態事件</h2><div id="log"></div></div></div></div>
+<div class="panel"><h2>驗收說明</h2><p>在另一分頁操作 V1.1 任務狀態，此頁應於 3 秒內更新員工燈號及位置。重新整理此頁不應影響原始任務。夜景依本機時間 18:00–06:00 自動切換。</p><p class="meta">開發預覽：GitHub Pages 正式主線仍為 V1.1。本頁尚未通過瀏覽器端到端驗收。</p></div></main>
+<script>
+"use strict";
+const KEY="ai-employee-lab-v1-1";
+const defaults=["Eve","Joseph","Luke","Solomon","Nehemiah","Paul"];
+const emojis=["🦉","🐻","🦌","🐦","🐕","🐿️"];
+const coords={working:[[76,30],[16,30],[17,73],[77,74]],review:[50,57],idle:[50,53],stuck:[49,72],offline:[16,80]};
+const $=id=>document.getElementById(id);
+let last={}, initialized=false;
+function getData(){try{return JSON.parse(localStorage.getItem(KEY)||"null")}catch{return null}}
+function normalize(data){
+ const agents=Array.isArray(data?.agents)?data.agents:[];
+ const tasks=Array.isArray(data?.tasks)?data.tasks:[];
+ return defaults.map((name,i)=>{
+ const a=agents.find(x=>String(x.name||"").toLowerCase()===name.toLowerCase());
+ const mine=tasks.filter(t=>a&&(t.assignee===a.id||t.agentId===a.id||t.assignee===name||t.assigneeId===a.id));
+ const values=mine.map(t=>String(t.status||""));
+ let state=values.some(s=>s==="失敗"||s==="failed")?"stuck":values.some(s=>s==="工作中"||s==="in_progress")?"working":values.some(s=>s==="等待核准"||s==="review")?"review":values.some(s=>s==="待辦"||s==="todo")?"idle":"offline";
+ return {name,emoji:emojis[i],state,count:mine.length,i};
+ });
+}
+const labels={working:"工作中",review:"等待核准",idle:"閒置／待辦",stuck:"失敗／卡住",offline:"無執行任務"};
+function position(p){const places=coords[p.state]||coords.offline;return places[p.i%places.length]}
+function tick(){
+ const data=getData(), people=normalize(data), stamp=new Date();
+ $("clock").textContent=stamp.toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"});
+ $("world").classList.toggle("night",stamp.getHours()>=18||stamp.getHours()<6);
+ $("source").textContent=data?"來源：V1.1 本機任務資料（非真實 AI 執行）":"尚未找到 V1.1 資料，請確認網址來源及是否建立過任務";
+ const box=$("people"), states=$("statuses");
+ for(const p of people){
+  let el=document.getElementById("person-"+p.name);
+  if(!el){el=document.createElement("div");el.id="person-"+p.name;el.className="person";el.innerHTML='<span class="avatar"></span><span class="tag"></span>';box.appendChild(el);el.style.left="50%";el.style.top="53%"}
+  const [x,y]=position(p);el.className="person "+p.state;el.querySelector(".avatar").textContent=p.emoji;el.querySelector(".tag").textContent=p.name+" · "+labels[p.state];el.style.left=x+"%";el.style.top=y+"%";
+  const signature=p.state+"|"+p.count;
+  if(initialized&&last[p.name]!==signature){const item=document.createElement("p");item.textContent=stamp.toLocaleTimeString("zh-TW")+" "+p.name+" → "+labels[p.state];$("log").prepend(item);while($("log").children.length>30)$("log").lastChild.remove()}
+  last[p.name]=signature;
+ }
+ states.replaceChildren();
+ for(const p of people){const d=document.createElement("div");d.className="status";const left=document.createElement("span");left.textContent=p.emoji+" "+p.name;const right=document.createElement("span");right.textContent=labels[p.state];d.append(left,right);states.appendChild(d)}
+ initialized=true;
+}
+$("refresh").addEventListener("click",tick);
+window.addEventListener("storage",e=>{if(e.key===KEY)tick()});
+tick();setInterval(tick,3000);
+</script></body></html>
