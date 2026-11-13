@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VoiceMate AI｜真正的多輪文字陪伴</title>
+<meta name="theme-color" content="#211b35">
+<style>
+:root{color-scheme:dark;--bg:#151122;--panel:#241d38;--b:#4d3b67;--p:#c48cf2;--txt:#f5efff;--muted:#c1b4d2}*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:radial-gradient(ellipse at top,#352353,var(--bg) 60%);color:var(--txt);margin:0}
+main{max-width:730px;margin:auto;padding:21px 16px 32px}header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 0 16px}
+h1{font-size:23px;margin:0}.sub{font-size:13px;color:var(--muted);margin-top:6px}.chip{font-size:12px;padding:7px 10px;border:1px solid #68527e;border-radius:20px;color:#dac9e8}
+.card{background:#241d38e8;border:1px solid var(--b);border-radius:22px;padding:17px;margin:13px 0}
+h2{font-size:17px;margin:0 0 12px}.label{display:block;font-size:13px;color:#d6c5e8;margin:12px 0 6px}
+select,input,textarea,button{font:inherit}select,textarea{width:100%;border-radius:12px;background:#1a152a;border:1px solid #6a5481;color:var(--txt);padding:12px}
+button{border:0;border-radius:12px;padding:12px 15px;cursor:pointer;font-weight:650;background:#b985ed;color:#211333}
+button:disabled{opacity:.5;cursor:not-allowed}.ghost{background:#493a61;color:#f6efff}.outline{border:1px solid #856d9b;background:none;color:#fff}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.note{font-size:13px;color:var(--muted);line-height:1.7;margin:7px 0}
+#feed{display:flex;flex-direction:column;gap:14px;min-height:290px;max-height:55vh;overflow:auto;padding:5px 2px 12px}
+.message{max-width:90%;padding:13px 15px;border-radius:17px;background:#3a2b50;white-space:pre-wrap;line-height:1.65;overflow-wrap:anywhere}
+.message.mine{align-self:flex-end;background:#714a98}.who{display:block;color:#d9bff0;font-size:12px;margin:0 0 6px}.mine .who{color:#f1d7ff}
+form{display:flex;gap:9px;align-items:stretch}textarea{resize:vertical;min-height:61px;max-height:140px;flex:1}#send{width:87px;flex:none}
+.error{color:#ffb5bb}.ok{color:#a7f6bf}.small{font-size:12px}a{color:#dfb8ff}
+footer{padding:12px 0;font-size:12px;color:#ac9bbf;line-height:1.7}
+</style>
+<script src="https://js.puter.com/v2/"></script>
+</head>
+<body><main>
+<header><div><h1>💜 VoiceMate AI</h1><div class="sub">V1.0-TEXT｜真正生成式 AI · 多輪文字陪伴</div></div><span class="chip" id="connection">尚未連線</span></header>
+<section class="card">
+<h2>① 免費額度與登入</h2>
+<p class="note">本站透過 Puter.js 串接真正的 AI 模型，不使用固定台詞，也不要求輸入 API 金鑰。首次聊天可能需要登入 Puter 帳號。每位使用者有個人免費 AI 額度；額度用完請停止使用，本網站不會自動購買或收費。</p>
+<div class="row"><button id="login" type="button">登入／確認 Puter 帳號</button><button id="check" type="button" class="ghost">檢查連線</button></div>
+<p class="note" id="status" role="status" aria-live="polite">請先登入，之後輸入文字測試真實 AI 回覆。</p>
+</section>
+<section class="card"><h2>② 陪伴個性</h2>
+<label class="label" for="persona">選擇 AI 個性</label>
+<select id="persona"><option value="sweet">🌹 甜言蜜語｜真誠浪漫、自然接話</option><option value="gentle">💗 溫柔陪伴｜理解感受、傾聽</option><option value="humor">😄 幽默搞笑｜有趣但尊重</option><option value="wise">🧠 成熟知性｜理性、有溫度</option></select>
+<p class="note">變更個性會影響下一則回覆。聊天上下文暫存在此頁記憶體，重新整理即消失；不在本網站伺服器保存聊天紀錄。</p>
+</section>
+<section class="card">
+<h2>③ 開始真正 AI 對話</h2>
+<div id="feed" role="log" aria-live="polite" aria-label="聊天紀錄"><div class="message"><span class="who">VoiceMate · 系統提示</span>歡迎！請先登入 Puter，再輸入「今天好累」試試。這裡的回答將交給真實 AI 產生，沒有固定台詞備援。</div></div>
+<form id="chatForm"><textarea id="message" maxlength="1200" placeholder="想聊什麼？例如：今天真的好累…" aria-label="輸入聊天內容"></textarea><button type="submit" id="send">送出</button></form>
+<div class="row" style="margin-top:12px"><button type="button" id="clear" class="outline">清除本頁對話記憶</button><button type="button" id="test" class="ghost">輸入測試句</button></div>
+<p class="note" id="memorycount">目前多輪記憶：0 輪</p>
+</section>
+<footer>第三階段文字 AI 測試版。尚未支援動態男女聲、麥克風收音或即時語音通話，請勿將其誤認為已完成 VoiceMate 語音版。對話會傳送到 Puter 與其 AI 服務供應商，請勿輸入個資、密碼或敏感資料。<br>免費額度依 Puter 帳號與供應商規則而定，不保證永久免費。<a href="https://developer.puter.com/pricing/" rel="noopener" target="_blank">查看 Puter 用量規則</a></footer>
+</main>
+<script>
+(() => {
+'use strict';
+const $=id=>document.getElementById(id);
+const history=[];
+let busy=false;
+const prompts={
+sweet:'你是 VoiceMate，一位真誠、幽默、微甜浪漫的 AI 陪伴聊天對象。用自然台灣繁體中文回話，像真人朋友一樣能接住對方話題，可以自然適度稱讚或曖昧但尊重界線；絕不宣稱你是真人，使用者表示不喜歡就立即調整。避免空洞的罐頭安慰或總是問一樣問題。每次通常2到4句，可依內容調整。',
+gentle:'你是 VoiceMate，擅長傾聽的溫柔 AI 陪伴聊天對象。請使用自然台灣繁體中文，以適當同理心延續上下文，不過度揣測情緒，不假裝是人類；通常2到4句。',
+humor:'你是 VoiceMate，一位有分寸、反應機靈的幽默 AI 陪伴聊天對象。自然使用台灣繁體中文，接住對方具體內容後才幽默回應，避免諷刺弱勢、不要反覆固定笑話；通常2到4句。',
+wise:'你是 VoiceMate，成熟穩重、理性又有溫度的 AI 陪伴聊天對象。使用台灣繁體中文，理解多輪上下文，重點明確但避免說教；通常2到4句。'
+};
+function status(t,cl=''){const e=$('status');e.textContent=t;e.className='note '+cl}
+function add(who,body,mine=false){const div=document.createElement('div');div.className='message'+(mine?' mine':'');const label=document.createElement('span');label.className='who';label.textContent=who;div.append(label,document.createTextNode(body));$('feed').append(div);$('feed').scrollTop=$('feed').scrollHeight}
+function textFrom(r){if(typeof r==='string')return r.trim();if(r?.message?.content){const c=r.message.content;if(typeof c==='string')return c.trim();if(Array.isArray(c))return c.map(x=>typeof x==='string'?x:x?.text||'').join('').trim();}if(typeof r?.text==='string')return r.text.trim();if(typeof r?.content==='string')return r.content.trim();return ''}
+function setBusy(v){busy=v;$('send').disabled=v;$('login').disabled=v;$('send').textContent=v?'思考中…':'送出'}
+function puterReady(){return typeof window.puter!=='undefined' && !!window.puter.ai?.chat}
+async function check(){if(!puterReady()){status('AI 程式庫未能載入，請確認網路、關閉阻擋腳本的擴充功能後重試。','error');$('connection').textContent='服務未載入';return false}
+try{const signed=await window.puter.auth.isSignedIn();$('connection').textContent=signed?'帳號已登入':'需要登入';status(signed?'Puter 已登入，可以開始真實 AI 多輪聊天。':'尚未登入 Puter。點「登入／確認 Puter 帳號」。',signed?'ok':'');return signed}catch(e){status('無法檢查登入狀態：'+(e?.message||String(e)),'error');return false}}
+$('check').onclick=check;
+$('login').onclick=async()=>{if(!puterReady()){await check();return}try{status('正在要求 Puter 登入…');await window.puter.auth.signIn();await check()}catch(e){status('登入失敗或已取消：'+(e?.message||String(e)),'error')}};
+$('test').onclick=()=>{$('message').value='今天真的好累，剛忙完一整天。你可以陪我聊聊嗎？';$('message').focus()};
+$('clear').onclick=()=>{history.length=0;$('feed').replaceChildren();add('VoiceMate · 系統提示','已清除這個頁面的多輪聊天記憶。');$('memorycount').textContent='目前多輪記憶：0 輪';status('聊天記憶已清除。')};
+$('chatForm').addEventListener('submit',async(e)=>{
+e.preventDefault();if(busy)return;
+const input=$('message').value.trim();if(!input)return;
+if(!puterReady()){await check();return}
+if(!(await check())){status('請先登入 Puter，再送出訊息。','error');return}
+$('message').value='';add('你',input,true);setBusy(true);status('正在呼叫真正的 AI 模型，請稍候…');
+const messages=[{role:'system',content:prompts[$('persona').value]},...history.slice(-20),{role:'user',content:input}];
+try{
+const result=await window.puter.ai.chat(messages);
+const answer=textFrom(result);
+if(!answer)throw Error('AI 回傳空內容，並非成功回覆');
+add('VoiceMate · 真正 AI 回覆',answer);
+history.push({role:'user',content:input},{role:'assistant',content:answer});
+if(history.length>24)history.splice(0,history.length-24);
+$('memorycount').textContent='目前多輪記憶：'+Math.floor(history.length/2)+' 輪（最多保留 12 輪）';
+status('AI 已生成回覆，可繼續追問前面的內容。','ok');
+}catch(err){add('VoiceMate · 系統錯誤','AI 連線失敗，沒有產生回覆。請檢查 Puter 登入、免費額度或網路後重試。');status('AI API 錯誤：'+(err?.message||String(err)),'error');$('message').value=input}finally{setBusy(false);$('message').focus()}
+});
+setTimeout(check,800);
+})();
+</script></body></html>
